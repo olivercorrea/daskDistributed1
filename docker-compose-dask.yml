@@ -1,0 +1,29 @@
+version: "3"
+services:
+  scheduler:
+    image: rimaro/dask-image:latest
+    command: dask-scheduler
+    ports:
+      - "8786:8786"
+      - "8787:8787"
+    volumes:
+      - /mnt/nfs_share/ml-100k:/mnt/nfs_client/ml-100k
+    networks:
+      - dask-net
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  worker:
+    image: rimaro/dask-image:latest
+    command: dask-worker scheduler:8786
+    volumes:
+      - /mnt/nfs_client/ml-100k:/mnt/nfs_client/ml-100k
+    networks:
+      - dask-net
+    deploy:
+      placement:
+        constraints: [node.role == worker]
+networks:
+  dask-net:
+    driver: overlay
